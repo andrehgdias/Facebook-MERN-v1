@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const bcrypt = require("bcrypt");
 const User = require("../models/User.js");
 
 router.put("/:id", async (req, res) => {
@@ -8,7 +9,7 @@ router.put("/:id", async (req, res) => {
                 const salt = await bcrypt.genSalt(10);
                 req.body.password = await bcrypt.hash(req.body.password, salt);
             } catch (err) {
-                return res.status(500).json(err);
+                return res.status(500).json({...err, msg: "Couldn't update the password"});
             }
         }
         try {
@@ -25,11 +26,26 @@ router.put("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-    res.send("User route");
+    if (req.body.userId === req.params.id || req.body.isAdmin) {
+        try {
+            await User.findByIdAndDelete(req.params.id);
+            res.status(200).json("Account has been deleted");
+        } catch (err) {
+            return res.status(500).json(err);
+        }
+    } else {
+        return res.status(403).json("You can delete only your account!");
+    }
 });
 
-router.get("/", (req, res) => {
-    res.send("User route");
+router.get("/:id", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        const {password, updatedAt, ...userData} = user._doc;
+        res.status(200).json(userData);
+    } catch(err) {
+        res.status(500).json(err);
+    }
 });
 
 module.exports = router;
