@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const userRoute = require("./routes/users.js")
 const authRoute = require("./routes/auths.js")
+const postRoute = require("./routes/posts.js")
 
 const app = express();
 dotenv.config();
@@ -22,6 +23,7 @@ app.use(helmet());
 app.use(morgan("common"));
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
+app.use("/api/post", postRoute);
 
 app.get("/", (req, res) => {
     res.send("Home Page");
